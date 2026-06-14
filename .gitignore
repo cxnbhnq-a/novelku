@@ -1,19 +1,4 @@
-.env
-.env.*
-/vendor
-/node_modules
-/storage/*.key
-/storage/logs/*
-/storage/framework/cache/*
-/storage/framework/sessions/*
-/storage/framework/views/*
-/bootstrap/cache/*
-/public/storage
-*.sql
-*.sql.gz
-*.zip
-*.tar
-*.tar.gz
+
 
 /.phpunit.cache
 /node_modules
