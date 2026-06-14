@@ -1,4 +1,0 @@
-# Dirsearch started Fri Apr 24 01:38:55 2026 as: /usr/lib/python3/dist-packages/dirsearch/dirsearch.py -u http://brad-unsliced-unseemly.ngrok-free.dev
-
-308     0B   http://brad-unsliced-unseemly.ngrok-free.dev/.well-known/acme-challenge    -> REDIRECTS TO: https://acme.ngrok.com/certs-auto/.well-known/acme-challenge?host=brad-unsliced-unseemly.ngrok-free.dev
-308     0B   http://brad-unsliced-unseemly.ngrok-free.dev/.well-known/acme-challenge/dtfy    -> REDIRECTS TO: https://acme.ngrok.com/certs-auto/.well-known/acme-challenge/dtfy?host=brad-unsliced-unseemly.ngrok-free.dev
