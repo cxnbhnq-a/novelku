@@ -41,13 +41,39 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        // Cek dulu apakah emailnya ada di database atau nggak
+        $userExists = \App\Models\User::where('email', $this->email)->exists();
+
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
+
+            // 🚨 SENSOR LOG: CATAT ORANG GAGAL LOGIN 🚨
+            \App\Models\ActivityLog::create([
+                'log_type' => 'login_failed',
+                'email' => $this->email,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'status' => 'failed',
+                'severity' => $userExists ? 'warning' : 'critical', // Kalau email ngarang, statusnya critical!
+                'message' => $userExists ? 'Gagal login: Password salah' : 'Gagal login: Email tidak terdaftar di sistem',
+            ]);
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);
         }
+
+        // 🚨 SENSOR LOG: CATAT ORANG BERHASIL LOGIN 🚨
+        \App\Models\ActivityLog::create([
+            'log_type' => 'login_success',
+            'user_id' => Auth::id(),
+            'email' => $this->email,
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'status' => 'success',
+            'severity' => 'info',
+            'message' => 'User berhasil login',
+        ]);
 
         RateLimiter::clear($this->throttleKey());
     }

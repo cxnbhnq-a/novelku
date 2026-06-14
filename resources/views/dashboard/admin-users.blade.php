@@ -66,8 +66,28 @@
         .btn-icon:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
         .btn-icon.danger:hover { background: #dc3545; color: white; border-color: #dc3545; }
 
-        /* Pagination Links Styling */
+         /* TOAST NOTIFICATION - DARK MODE MUTLAK */
+        .toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; pointer-events: none; }
+        .toast { min-width: 320px; padding: 20px 24px; border-radius: var(--radius); color: #ffffff; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 18px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); transform: translateY(20px); transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; background-color: #111111; border: 1px solid #222222; }
+        .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+        .toast-icon { font-size: 20px; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid #222222; }
+        .toast.success .toast-icon { color: #28a745; background: rgba(40, 167, 69, 0.1); border-color: rgba(40, 167, 69, 0.3); }
+        .toast.error .toast-icon { color: #dc3545; background: rgba(220, 53, 69, 0.1); border-color: rgba(220, 53, 69, 0.3); }
+        .toast-text { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+        .toast-title { color: #ffffff; font-weight: 700; font-size: 16px; }
+        .toast-message { color: #a0a0a0; font-weight: 500; font-size: 14px; }
+
         .pagination-container { padding: 20px; border-top: 1px solid var(--border); }
+
+        /* Custom pagination to match Novelku dashboard theme */
+        .pagination { list-style: none; display: flex; gap: 8px; padding: 0; margin: 0; justify-content: flex-end; flex-wrap: wrap; }
+        .pagination li { display: inline-block; }
+        .pagination a, .pagination span { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; height: 40px; padding: 0 12px; border-radius: 10px; background: transparent; border: 1px solid var(--border); color: var(--text); text-decoration: none; font-weight: 700; transition: background .15s, color .15s, transform .06s; }
+        .pagination a:hover { background: rgba(0,0,0,0.04); transform: translateY(-1px); }
+        @media (prefers-color-scheme: dark) { .pagination a:hover { background: rgba(255,255,255,0.03); } }
+        .pagination .active span { background: var(--text); color: var(--bg); border-color: var(--text); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+        .pagination .disabled span { opacity: .45; cursor: default; }
+        .pagination-summary { margin-top: 8px; color: var(--muted); font-size: 13px; }
         
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 998; opacity: 0; transition: 0.3s; }
         @media (max-width: 900px) {
@@ -94,7 +114,8 @@
             
             {{-- Ini Menu Kelola User (Sekarang jadi Active) --}}
             <a href="{{ route('admin.users') }}" class="nav-link active">👥 Kelola User</a>
-            
+            {{-- Tambahin menu baru buat Security Logs --}}
+            <a href="{{ route('admin.logs') }}" class="nav-link">🛡️ Security Logs</a>
         </nav>
 
         <div class="sidebar-bottom">
@@ -203,11 +224,27 @@
 
             @if($users->hasPages())
                 <div class="pagination-container">
-                    {{ $users->links('pagination::bootstrap-5') }}
+                    {{ $users->links('vendor.pagination.novelku') }}
                 </div>
             @endif
         </div>
     </main>
+
+<div class="toast-container">
+        <div id="appToast" class="toast @if(session('success')) success show @elseif(session('error')) error show @endif">
+            <span class="toast-icon" id="toastIcon">
+                @if(session('success')) ✅ @elseif(session('error')) ⚠️ @endif
+            </span>
+            <span class="toast-text">
+                <span class="toast-title" id="toastTitle">
+                    @if(session('success')) Sukses @elseif(session('error')) Error @endif
+                </span>
+                <span class="toast-message" id="toastMessage">
+                    {{ session('success') ?? session('error') }}
+                </span>
+            </span>
+        </div>
+    </div>
 
     <script>
         function toggleDropdown() { document.getElementById("profileDropdown").classList.toggle("show"); }

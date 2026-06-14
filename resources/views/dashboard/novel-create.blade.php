@@ -49,6 +49,16 @@
         .btn-submit { background: var(--accent); color: var(--bg); border: none; padding: 14px 24px; font-weight: 600; border-radius: 8px; cursor: pointer; font-size: 15px; width: 100%; transition: 0.2s; }
         .btn-submit:hover { opacity: 0.8; }
 
+        /* TOAST NOTIFICATION - DARK MODE */
+        .toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; pointer-events: none; }
+        .toast { min-width: 320px; padding: 20px 24px; border-radius: var(--radius); color: #ffffff; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 18px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); transform: translateY(20px); transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; background-color: #111111; border: 1px solid #222222; }
+        .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+        .toast-icon { font-size: 20px; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid #222222; }
+        .toast.success .toast-icon { color: #28a745; background: rgba(40, 167, 69, 0.1); border-color: rgba(40, 167, 69, 0.3); }
+        .toast.error .toast-icon { color: #dc3545; background: rgba(220, 53, 69, 0.1); border-color: rgba(220, 53, 69, 0.3); }
+        .toast-text { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+        .toast-title { color: #ffffff; font-weight: 700; font-size: 16px; }
+        .toast-message { color: #a0a0a0; font-weight: 500; font-size: 14px; }
         /* --- TAMBAHAN CSS RESPONSIF HP --- */
         .hamburger-btn { display: none; background: none; border: none; color: var(--text); font-size: 28px; cursor: pointer; padding: 0; }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
@@ -85,6 +95,7 @@
             <a href="{{ route('dashboard') }}" class="nav-link">📊 Dashboard</a>
             <a href="{{ route('karya.saya') }}" class="nav-link">📚 Karya Saya</a>
             <a href="{{ route('novel.create') }}" class="nav-link active">✍️ Tambah Novel</a>
+            <a href="{{ route('profile.edit') }}" class="nav-link">⚙️ Edit Profil</a>
             <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
                 @csrf
                 <button type="submit" class="nav-link" style="width: 100%; border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: inherit; text-align: left;">
@@ -143,11 +154,25 @@
                         </div>
                         <img id="coverPreview" class="cover-preview" src="" alt="Preview Cover">
                     </div>
-                    <input type="file" id="coverInput" name="cover_image" accept="image/*" style="display: none;" onchange="previewCover(event)">
+                    <input type="file" id="coverInput" name="cover_image" accept="image/png, image/jpeg, image/jpg, image/webp" style="display: none;" onchange="previewCover(event)">
                 </div>
 
                 <button type="submit" class="btn-submit">Simpan Novel & Lanjut Tulis Bab 1</button>
             </form>
+        </div>
+    </main>
+<div class="toast-container">
+            @if ($errors->any() || session('success') || session('error'))
+                <div id="appToast" class="toast {{ session('success') ? 'success' : 'error' }} show">
+                    <span class="toast-icon">
+                        {{ session('success') ? '✅' : '⚠️' }}
+                    </span>
+                    <span class="toast-text">
+                        <span class="toast-title">{{ session('success') ? 'Sukses' : 'Error' }}</span>
+                        <span class="toast-message">{{ session('success') ?? session('error') ?? $errors->first() }}</span>
+                    </span>
+                </div>
+            @endif
         </div>
     </main>
 
@@ -158,22 +183,69 @@
             document.getElementById('sidebarOverlay').classList.toggle('show');
         }
 
-        // Script untuk nampilin preview gambar saat cover dipilih
+        // FUNGSI TOAST CLIENT-SIDE
+        function showCustomToast(type, title, message) {
+            const container = document.querySelector('.toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type} show`;
+            toast.innerHTML = `
+                <span class="toast-icon">${type === 'success' ? '✅' : '⚠️'}</span>
+                <span class="toast-text">
+                    <span class="toast-title">${title}</span>
+                    <span class="toast-message">${message}</span>
+                </span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3500);
+        }
+
+        // FUNGSI PREVIEW GAMBAR
         function previewCover(event) {
             const input = event.target;
             const preview = document.getElementById('coverPreview');
             const uploadText = document.getElementById('uploadText');
 
             if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+                const allowedExtensions = ['jpeg', 'jpg', 'png', 'webp'];
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+
+                if (!allowedTypes.includes(file.type) || !allowedExtensions.includes(fileExtension)) {
+                    showCustomToast('error', 'Format File Salah', 'Pilih file gambar JPG, PNG, atau WEBP yang aman.');
+                    input.value = '';
+                    preview.style.display = 'none';
+                    if (uploadText) uploadText.style.display = 'block';
+                    return;
+                }
+
+                if (file.size > 2 * 1024 * 1024) {
+                    showCustomToast('error', 'Ukuran Terlalu Besar', 'Maksimal ukuran cover novel cuma 2MB ya.');
+                    input.value = '';
+                    preview.style.display = 'none';
+                    if (uploadText) uploadText.style.display = 'block';
+                    return;
+                }
+
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     preview.src = e.target.result;
                     preview.style.display = 'block';
-                    uploadText.style.display = 'none';
+                    if (uploadText) uploadText.style.display = 'none';
                 }
-                reader.readAsDataURL(input.files[0]);
+                reader.readAsDataURL(file);
             }
         }
+
+        // AUTO HIDE TOAST SERVER-SIDE
+        document.addEventListener('DOMContentLoaded', () => {
+            const serverToast = document.getElementById('appToast');
+            if (serverToast) {
+                setTimeout(() => { 
+                    serverToast.classList.remove('show'); 
+                }, 3500);
+            }
+        });
     </script>
 </body>
 </html>

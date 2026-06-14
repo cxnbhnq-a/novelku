@@ -16,17 +16,17 @@
             }
         }
         body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
-        
+
         /* SIDEBAR */
         aside { width: 250px; background: var(--card); border-right: 1px solid var(--border); padding: 30px 20px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0;}
         .nav-link { padding: 12px 15px; border-radius: var(--radius); text-decoration: none; color: var(--text); font-weight: 500; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
         .nav-link:hover, .nav-link.active { background: var(--bg); border: 1px solid var(--border); }
-        
+
         /* MAIN CONTENT */
         main { flex: 1; padding: 40px; overflow-y: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .card { background: var(--card); border: 1px solid var(--border); padding: 24px; border-radius: var(--radius); }
-        
+
         /* STATISTIK ANALISA */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { display: flex; align-items: center; gap: 15px; padding: 20px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
@@ -40,7 +40,7 @@
         .btn-sm:hover { opacity: 0.8; }
         .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
         .btn-outline:hover { background: var(--bg); }
-        
+
         .novel-list { display: flex; flex-direction: column; gap: 15px; }
         .novel-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
         .novel-meta h4 { margin: 0 0 5px; font-size: 16px; }
@@ -72,27 +72,88 @@
         .btn-danger { padding: 10px 15px; border-radius: 8px; cursor: pointer; flex: 1; border: none; background: #dc3545; color: white; font-weight: 600; transition: 0.2s; }
         .btn-danger:hover { background: #c82333; }
 
-        /* TOAST NOTIFICATION */
+        /* TOAST NOTIFICATION - FORCED DARK MODE (SELARAS DENGAN MODAL) */
         .toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; pointer-events: none; }
-        .toast { min-width: 250px; padding: 15px 20px; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.15); transform: translateX(120%); transition: transform 0.4s ease, opacity 0.4s ease; opacity: 0; }
-        .toast.show { transform: translateX(0); opacity: 1; pointer-events: auto; }
-        .toast.success { background-color: #198754; border-left: 6px solid #146c43; }
-        .toast.error { background-color: #dc3545; border-left: 6px solid #b02a37; }
-    
+
+        .toast {
+            min-width: 320px;
+            padding: 20px 24px;
+            border-radius: var(--radius);
+            color: #ffffff; /* Paksa teks putih agar kontras di background hitam */
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            transform: translateY(20px);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+            background-color: #111111; /* Paksa latar belakang gelap pekat */
+            border: 1px solid #222222; /* Paksa border abu-abu sangat gelap */
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .toast-icon {
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid #222222;
+        }
+
+        /* Aksen warna ikon dengan background transparan elegan */
+        .toast.success .toast-icon { color: #28a745; background: rgba(40, 167, 69, 0.1); border-color: rgba(40, 167, 69, 0.3); }
+        .toast.error .toast-icon { color: #dc3545; background: rgba(220, 53, 69, 0.1); border-color: rgba(220, 53, 69, 0.3); }
+
+        /* Penataan Teks Toast */
+        .toast-text {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .toast-title {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .toast-message {
+            color: #a0a0a0; /* Abu-abu terang untuk deskripsi */
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        /* Hilangkan batas kiri solid yang keras */
+        .toast.success, .toast.error {
+            background-color: #111111; 
+            border-left: none; 
+        }
+
         /* --- TAMBAHAN CSS RESPONSIF HP --- */
         .hamburger-btn { display: none; background: none; border: none; color: var(--text); font-size: 28px; cursor: pointer; padding: 0; }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
-        
+
         @media (max-width: 768px) {
             /* Sembunyikan Sidebar, jadikan melayang */
-            aside { 
+            aside {
                 position: fixed; top: 0; left: -300px; /* Sembunyi di kiri */
                 height: 100vh; z-index: 999; box-shadow: 4px 0 15px rgba(0,0,0,0.5);
                 transition: left 0.3s ease;
             }
             /* Class untuk nampilin sidebar */
             aside.show { left: 0; }
-            
+
             /* Tampilkan tombol dan overlay */
             .hamburger-btn { display: block; }
             .sidebar-overlay.show { display: block; opacity: 1; }
@@ -100,7 +161,7 @@
             /* Rapiin konten utama di HP */
             main { padding: 20px; }
             .header { flex-wrap: wrap; gap: 15px; }
-            
+
             /* Khusus card/grid biar gak gepeng */
             .manager-grid, .row-group, .stats-grid { display: flex; flex-direction: column; gap: 15px; }
             .form-card { padding: 20px; }
@@ -117,7 +178,7 @@
 
     <aside>
         <a href="/" style="font-size: 22px; font-weight: 900; margin-bottom: 10px; text-decoration: none; color: inherit; display: block;">NOVELKU.</a>
-        
+
         <div class="card" style="text-align: center; padding: 20px 10px;">
             <div class="avatar-wrapper">
                 <div class="avatar-box" id="avatarDisplay">
@@ -127,12 +188,12 @@
                         {{ $inisial }}
                     @endif
                 </div>
-                
+
                 <button type="button" class="edit-pp-btn" onclick="togglePpMenu()" title="Edit Foto Profil">✏️</button>
-                
+
                 <div id="ppMenu" class="pp-menu">
                     <label for="ppUpload" class="pp-menu-item" style="margin:0;">🖼️ Ganti Foto</label>
-                    
+
                     @if ($profile_pic)
                     <form id="deletePpForm" action="{{ route('profile.picture.delete') }}" method="POST" style="margin:0;">
                         @csrf
@@ -142,21 +203,22 @@
                     @endif
                 </div>
             </div>
-            
+
             <div style="font-weight: 700;">{{ $user->name }}</div>
             <div style="font-size: 12px; color: var(--muted);">Penulis (Creator)</div>
 
             <form id="ppForm" action="{{ route('profile.picture.update') }}" method="POST" enctype="multipart/form-data" style="display: none;">
                 @csrf
-                <input type="file" id="ppUpload" name="profile_picture" accept="image/png, image/jpeg, image/jpg, image/webp" onchange="document.getElementById('ppForm').submit();">
+                <input type="file" id="ppUpload" name="profile_picture" accept="image/png, image/jpeg, image/jpg, image/webp">
             </form>
         </div>
-        
+
         <nav style="display:flex; flex-direction:column; gap:5px;">
             <a href="{{ route('dashboard') }}" class="nav-link active">📊 Dashboard</a>
             <a href="{{ route('karya.saya') }}" class="nav-link">📚 Karya Saya</a>
             <a href="{{ route('novel.create') }}" class="nav-link">✍️ Tambah Novel</a>
-            
+            <a href="{{ route('profile.edit') }}" class="nav-link">⚙️ Edit Profil</a>
+
             <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
                 @csrf
                 <button type="submit" class="nav-link" style="width: 100%; border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: inherit; text-align: left;">
@@ -229,7 +291,7 @@
                 </div>
             @endforelse
         </div>
-    </main> 
+    </main>
 
     <div id="deleteModal" class="modal-overlay">
         <div class="modal-content">
@@ -243,12 +305,21 @@
     </div>
 
     @if (session('success') || session('error'))
-        <div class="toast-container">
-            <div id="appToast" class="toast {{ session('success') ? 'success' : 'error' }} show">
-                <span class="toast-icon">{{ session('success') ? '✅' : '⚠️' }}</span>
-                <span>{{ session('success') ?? session('error') }}</span>
-            </div>
+         <div class="toast-container">
+        <div id="appToast" class="toast @if(session('success')) success show @elseif(session('error')) error show @endif">
+            <span class="toast-icon" id="toastIcon">
+                @if(session('success')) ✅ @elseif(session('error')) ⚠️ @endif
+            </span>
+            <span class="toast-text">
+                <span class="toast-title" id="toastTitle">
+                    @if(session('success')) Sukses @elseif(session('error')) Error @endif
+                </span>
+                <span class="toast-message" id="toastMessage">
+                    {{ session('success') ?? session('error') }}
+                </span>
+            </span>
         </div>
+    </div>
     @endif
 
     <script>
@@ -279,6 +350,53 @@
             document.getElementById('deletePpForm').submit();
         }
         deleteModal.addEventListener('click', function(event) { if (event.target === deleteModal) closeDeleteModal(); });
+
+        // 1. FUNGSI BUAT MANGGIL TOAST VIA JAVASCRIPT
+        function showCustomToast(type, title, message) {
+            const toast = document.getElementById('appToast');
+            const icon = document.getElementById('toastIcon');
+            const titleEl = document.getElementById('toastTitle');
+            const msgEl = document.getElementById('toastMessage');
+
+            // Reset kelasnya dulu
+            toast.className = 'toast'; 
+            
+            // Set warna dan ikon
+            if (type === 'error') {
+                toast.classList.add('error');
+                icon.innerText = '⚠️';
+            } else {
+                toast.classList.add('success');
+                icon.innerText = '✅';
+            }
+
+            // Set teksnya
+            titleEl.innerText = title;
+            msgEl.innerText = message;
+            
+            // Munculin toast-nya
+            toast.classList.add('show');
+
+            // Sembunyiin otomatis setelah 3.5 detik
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        // 2. LOGIKA CEGAT UPLOAD (Ganti alert jadi showCustomToast)
+        document.getElementById('ppUpload').addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const maxSize = 2 * 1024 * 1024; // 2MB
+                if (file.size > maxSize) {
+                    // MUNCULIN TOAST CAKEP, BUKAN ALERT BROWSER LAGI!
+                    showCustomToast('error', 'Ukuran Terlalu Besar', 'Waduh kegedean der! Maksimal ukuran foto profil cuma 2MB ya.');
+                    this.value = ''; // Hapus file yang kepilih
+                } else {
+                    document.getElementById('ppForm').submit();
+                }
+            }
+        });
 
         // Auto Hide Toast Laravel
         @if (session('success') || session('error'))

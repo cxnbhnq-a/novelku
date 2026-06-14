@@ -101,18 +101,15 @@
             border-top: 1px solid var(--divider); 
             background: var(--bg);
         }
-        .footer-content {
-            padding: 40px 10%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .footer-links { display: flex; gap: 20px; }
-        .footer-links a { color: var(--secondary); text-decoration: none; transition: 0.3s; font-size: 14px; }
-        .footer-links a:hover { color: var(--text); }
-
+.footer-content {
+    padding: 40px 10%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
         @media (max-width: 768px) {
             nav, .hero, .content-section, .footer-content { padding: 30px 5%; }
             .novel-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
@@ -187,11 +184,6 @@
         <div class="footer-content">
             <div style="color: var(--secondary); font-size: 14px;">
                 &copy; 2026 NovelKu. Hak cipta dilindungi.
-            </div>
-            <div class="footer-links">
-                <a href="#">Tentang Kami</a>
-                <a href="#">Kebijakan Privasi</a>
-                <a href="#">Ketentuan Layanan</a>
             </div>
         </div>
     </footer>

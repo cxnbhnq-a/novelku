@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Novel;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
+use App\Services\ActivityLogService;
 
 class AdminController extends Controller
 {
@@ -40,10 +41,24 @@ class AdminController extends Controller
      * RESET VIEWS (ADMIN Bypassing)
      * Bebas reset views tanpa harus jadi pemilik novel
      */
-    public function resetViews($uuid)
+    public function resetViews($id, Request $request = null)
     {
-        $novel = Novel::where('uuid', $uuid)->firstOrFail();
+        $novel = Novel::where('id',$id)->firstOrFail();
         
+        // LOG: Reset views
+        ActivityLogService::log(
+            'admin_action',
+            "Admin mereset views untuk novel: {$novel->title} dari {$novel->views} menjadi 0",
+            'success',
+            'info',
+            auth()->user()->email ?? null,
+            auth()->user()->id ?? null,
+            ['novel_id' => $novel->id, 'old_views' => $novel->views],
+            null,
+            null,
+            $request
+        );
+
         // Paksa views jadi 0
         $novel->views = 0;
         $novel->save();
@@ -55,10 +70,24 @@ class AdminController extends Controller
      * HAPUS PAKSA NOVEL (Take Down)
      * Admin berhak menghapus novel yang melanggar tanpa izin kreator
      */
-    public function deleteNovel($uuid)
+    public function deleteNovel($id, Request $request = null)
     {
-        $novel = Novel::where('uuid', $uuid)->firstOrFail();
+        $novel = Novel::where('id', $id)->firstOrFail();
         
+        // LOG: Delete novel
+        ActivityLogService::log(
+            'novel_deleted_by_admin',
+            "Admin menghapus novel: {$novel->title} (Penulis: {$novel->creator->email})",
+            'success',
+            'warning',
+            auth()->user()->email ?? null,
+            auth()->user()->id ?? null,
+            ['novel_id' => $novel->id, 'novel_title' => $novel->title, 'creator_email' => $novel->creator->email],
+            null,
+            null,
+            $request
+        );
+
         // Hapus file gambarnya dari server biar gak menuh-menuhin disk
         if ($novel->cover_image) {
             Storage::disk('public')->delete($novel->cover_image);
@@ -88,11 +117,28 @@ class AdminController extends Controller
 
         return view('dashboard.admin-users', compact('users')); // Pastikan nama folder dan file blade sesuai
     }
-    // Fungsi buat ngehapus user
-    public function deleteUser($uuid)
+
+    /**
+     * HAPUS USER
+     */
+    public function deleteUser($id, Request $request = null)
     {
-        $user = \App\Models\User::findOrFail($uuid);
+        $user = \App\Models\User::findOrFail($id);
         
+        // LOG: Delete user
+        ActivityLogService::log(
+            'user_deleted_by_admin',
+            "Admin menghapus user: {$user->email} ({$user->name})",
+            'success',
+            'warning',
+            auth()->user()->email ?? null,
+            auth()->user()->id ?? null,
+            ['deleted_user_id' => $user->id, 'deleted_user_email' => $user->email],
+            null,
+            null,
+            $request
+        );
+
         // Hapus user dari database
         $user->delete();
 

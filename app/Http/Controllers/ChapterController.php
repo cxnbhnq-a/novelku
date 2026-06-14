@@ -35,7 +35,7 @@ class ChapterController extends Controller
             'chapter_number' => 'required|integer|min:1',
             'title' => 'required|string|max:255',
             'content' => 'required|string', 
-            'chapter_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'chapter_image' => \App\Services\UploadValidationService::imageRules(),
         ]);
 
         $imagePath = null;
@@ -63,7 +63,11 @@ class ChapterController extends Controller
         if (isset($imagePath)) {
             Storage::disk('public')->delete($imagePath);
         }
-        return back()->withErrors($e->errors())->withInput();
+        $firstError = collect($e->errors())->flatten()->first();
+        return back()
+            ->withErrors($e->errors())
+            ->withInput()
+            ->with('error', $firstError ?: 'Validasi gagal. Periksa file dan data Anda.');
     } catch (\Exception $e) {
         DB::rollBack();
         // SECURE PATCH: Hapus file dari disk jika DB gagal
@@ -105,7 +109,7 @@ class ChapterController extends Controller
             'chapter_number' => 'required|integer',
             'title' => 'required|string|max:255',
             'content' => 'required|string', 
-            'chapter_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'chapter_image' => \App\Services\UploadValidationService::imageRules(),
         ]);
 
         $cleanContent = Purifier::clean($request->content);
@@ -138,7 +142,11 @@ class ChapterController extends Controller
         return redirect()->route('novel.edit', $chapter->novel_id)->with('success', 'Bab berhasil direvisi dan diamankan!');
 
     } catch (\Illuminate\Validation\ValidationException $e) {
-        return back()->withErrors($e->errors())->withInput();
+        $firstError = collect($e->errors())->flatten()->first();
+        return back()
+            ->withErrors($e->errors())
+            ->withInput()
+            ->with('error', $firstError ?: 'Validasi gagal. Periksa file dan data Anda.');
     } catch (\Exception $e) {
         DB::rollBack();
         // SECURE PATCH: Jika DB GAGAL, hapus file baru yang terlanjur terunggah ke disk

@@ -131,6 +131,7 @@
                 <span style="font-size: 12px; color: var(--muted);">{{ ucfirst($user->role) }}</span>
             </div>
             <a href="{{ route('collection') }}" class="dropdown-item" style="background: var(--bg); font-weight: bold;">📚 Koleksi Saya</a>
+            <a href="{{ route('profile.edit') }}" class="dropdown-item">⚙️ Pengaturan Profil</a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="dropdown-item" style="color:#dc3545; font-weight:600;">🚪 Keluar</button>

@@ -69,6 +69,7 @@
             <a href="{{ route('dashboard') }}" class="nav-link">📊 Dashboard</a>
             <a href="{{ route('karya.saya') }}" class="nav-link active">📚 Karya Saya</a>
             <a href="{{ route('novel.create') }}" class="nav-link">✍️ Tambah Novel</a>
+            <a href="{{ route('profile.edit') }}" class="nav-link">⚙️ Edit Profil</a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="nav-link" style="width: 100%; border: none; background: transparent; cursor: pointer; color: #dc3545;">🚪 Keluar</button>

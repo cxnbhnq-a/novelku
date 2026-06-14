@@ -30,12 +30,6 @@
         .avatar-wrapper { position: relative; display: inline-block; margin-bottom: 15px; }
         .avatar-box { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; background: var(--bg); overflow: hidden; margin: 0; }
         .avatar-box img { width: 100%; height: 100%; object-fit: cover; }
-        .edit-pp-btn { position: absolute; bottom: 0; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: var(--text); padding: 0; }
-        .edit-pp-btn:hover { background: var(--bg); transform: scale(1.05); }
-        .pp-menu { display: none; position: absolute; bottom: -70px; right: -50px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100; flex-direction: column; overflow: hidden; min-width: 150px; }
-        .pp-menu.show { display: flex; }
-        .pp-menu-item { padding: 10px 15px; cursor: pointer; display: block; text-align: left; border: none; background: none; width: 100%; font-size: 14px; color: var(--text); font-family: inherit; transition: 0.2s; text-decoration: none; }
-        .pp-menu-item:hover { background: var(--bg); }
 
         /* --- KONTEN KOLEKSI --- */
         .container { padding: 40px 5%; max-width: 1200px; margin: 0 auto; }
@@ -55,7 +49,7 @@
         .btn-remove:hover { color: #dc3545; border-color: #dc3545; background: #fff0f0; }
 
         .book-info { display: flex; gap: 15px; align-items: stretch; }
-        .book-thumb { width: 75px; height: 110px; background: var(--text); color: var(--bg); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; }
+        .book-thumb { width: 75px; height: 110px; background: var(--text); color: var(--bg); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; overflow: hidden; }
         .book-details { display: flex; flex-direction: column; justify-content: center; }
         .book-title { margin: 0 0 5px; font-size: 16px; font-weight: 700; line-height: 1.3; }
         .book-author { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
@@ -70,19 +64,6 @@
         .btn-continue { width: 100%; padding: 10px; background: var(--text); color: var(--bg); border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 10px; text-align: center; text-decoration: none; display: inline-block; }
         .btn-continue:hover { opacity: 0.8; }
 
-        /* --- MODAL HAPUS CSS --- */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px); opacity: 0; transition: opacity 0.2s ease; }
-        .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-content { background: var(--card); padding: 24px; border-radius: var(--radius); border: 1px solid var(--border); width: 90%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transform: translateY(20px); transition: transform 0.2s ease; }
-        .modal-overlay.show .modal-content { transform: translateY(0); }
-        .modal-title { font-size: 18px; font-weight: 700; margin: 0 0 10px; color: var(--text); }
-        .modal-text { color: var(--muted); font-size: 14px; margin: 0 0 20px; line-height: 1.5; }
-        .modal-actions { display: flex; gap: 10px; justify-content: center; }
-        .btn-cancel { padding: 10px 15px; border-radius: 8px; cursor: pointer; flex: 1; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-weight: 600; transition: 0.2s; }
-        .btn-cancel:hover { filter: brightness(0.9); }
-        .btn-danger { padding: 10px 15px; border-radius: 8px; cursor: pointer; flex: 1; border: none; background: #dc3545; color: white; font-weight: 600; transition: 0.2s; }
-        .btn-danger:hover { background: #c82333; }
-
         /* --- TOAST NOTIFICATION CSS --- */
         .toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; pointer-events: none; }
         .toast { min-width: 250px; padding: 15px 20px; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.15); transform: translateX(120%); transition: transform 0.4s ease, opacity 0.4s ease; opacity: 0; }
@@ -91,7 +72,6 @@
         .toast.error { background-color: #dc3545; border-left: 6px solid #b02a37; }
 
         @media (max-width: 768px) {
-            .search-wrapper { order: 3; flex-basis: 100%; max-width: 100%; margin-top: 5px; }
             .dropdown-content { right: -20px; }
             .collection-grid { grid-template-columns: 1fr; }
         }
@@ -101,8 +81,6 @@
 
 <div class="header">
     <a href="/" class="logo">NOVELKU.</a>
-    
-
     
     <div class="profile-menu">
         <div class="profile-avatar" onclick="toggleDropdown()">
@@ -117,21 +95,11 @@
             <div class="dropdown-header-card">
                 <div class="avatar-wrapper">
                     <div class="avatar-box">
+                        <!-- Tampilan Foto Profil Murni, Tanpa Tombol Edit -->
                         @if(auth()->user()->profile_picture)
                             <img src="{{ asset('storage/' . auth()->user()->profile_picture) }}" alt="Avatar">
                         @else
                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                        @endif
-                    </div>
-                    <button type="button" class="edit-pp-btn" onclick="togglePpMenu(event)" title="Edit Foto Profil">✏️</button>
-                    <div id="ppMenu" class="pp-menu">
-                        <label for="inputFotoProfil" class="pp-menu-item" style="margin:0;">🖼️ Ganti Foto</label>
-                        @if(auth()->user()->profile_picture)
-                        <form id="deletePpForm" action="{{ route('profile.picture.delete') }}" method="POST" style="margin:0;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="button" class="pp-menu-item text-danger" onclick="openDeleteModal()">🗑️ Hapus Foto</button>
-                        </form>
                         @endif
                     </div>
                 </div>
@@ -142,11 +110,6 @@
             <a href="{{ route('dashboard') }}" class="dropdown-item">🏠 Dashboard Utama</a>
             <a href="#" class="dropdown-item" style="background: var(--bg); font-weight: bold;">📚 Koleksi Saya</a>
             
-            <form id="formFotoProfil" action="{{ route('profile.picture.update') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                @csrf
-                <input type="file" id="inputFotoProfil" name="profile_picture" accept=".jpg, .jpeg, .png, .gif, .webp" onchange="document.getElementById('formFotoProfil').submit();">
-            </form>
-
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="dropdown-item text-danger" style="border-bottom: none;">🚪 Keluar</button>
@@ -173,14 +136,14 @@
             <div class="book-info">
                 <div class="book-thumb">
                     @if($b->novel->cover_image)
-                        <img src="{{ asset('storage/'.$b->novel->cover_image) }}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+                        <img src="{{ asset('storage/'.$b->novel->cover_image) }}" style="width:100%; height:100%; object-fit:cover;">
                     @else
                         {{ strtoupper(substr($b->novel->title, 0, 1)) }}
                     @endif
                 </div>
                 <div class="book-details">
                     <h4 class="book-title">{{ $b->novel->title }}</h4>
-                    <p class="book-author">{{ $b->novel->creator->name }}</p>
+                    <p class="book-author">{{ $b->novel->creator->name ?? 'Unknown' }}</p>
                     <span class="book-tag">Novel Terpilih</span>
                 </div>
             </div>
@@ -214,58 +177,19 @@
 @endif
 
 <script>
-const collections = [
-    { title: "Bayang di Balik Terali", author: "Ahmad Reza", genre: "Misteri", chapter: "Bab 14", progress: 65 },
-    { title: "Kode Biner Sang Peretas", author: "N. Albana", genre: "Sci-Fi", chapter: "Bab 22", progress: 80 },
-    { title: "Senja di Ujung Halmahera", author: "Siti Nurhaliza", genre: "Romansa", chapter: "Bab 5", progress: 15 },
-    { title: "Detektif Partikelir", author: "Rina Nose", genre: "Thriller", chapter: "Bab 1", progress: 0 }
-];
-
-function renderCollections() {
-    const el = document.getElementById("collectionList");
-    el.innerHTML = collections.map(n => `
-        <div class="collection-card">
-            <button class="btn-remove" title="Hapus dari Koleksi">✖</button>
-            <div class="book-info">
-                <div class="book-thumb">${n.title[0]}</div>
-                <div class="book-details">
-                    <h4 class="book-title">${n.title}</h4>
-                    <p class="book-author">${n.author}</p>
-                    <span class="book-tag">${n.genre}</span>
-                </div>
-            </div>
-            <div class="progress-container">
-                <div class="progress-text">
-                    <span>Terakhir: ${n.chapter}</span>
-                    <span>${n.progress}%</span>
-                </div>
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" style="width: ${n.progress}%;"></div>
-                </div>
-            </div>
-            <a href="#" class="btn-continue">${n.progress === 0 ? 'Mulai Baca' : 'Lanjutkan Baca'}</a>
-        </div>
-    `).join("");
+// Logic Dropdown Sederhana (Tanpa Edit Profil)
+function toggleDropdown() { 
+    document.getElementById("profileDropdown").classList.toggle("show"); 
 }
-
-function toggleDropdown() { document.getElementById("profileDropdown").classList.toggle("show"); }
-function togglePpMenu(event) { event.stopPropagation(); document.getElementById('ppMenu').classList.toggle('show'); }
 
 window.onclick = function(event) {
-    if (!event.target.closest('.profile-menu') && !event.target.closest('.modal-content')) {
+    if (!event.target.closest('.profile-menu')) {
         var dropdowns = document.getElementsByClassName("dropdown-content");
-        for (var i = 0; i < dropdowns.length; i++) { dropdowns[i].classList.remove('show'); }
+        for (var i = 0; i < dropdowns.length; i++) { 
+            dropdowns[i].classList.remove('show'); 
+        }
     }
-    const menuPp = document.getElementById('ppMenu');
-    const btnPp = document.querySelector('.edit-pp-btn');
-    if (menuPp && btnPp && !menuPp.contains(event.target) && !btnPp.contains(event.target)) { menuPp.classList.remove('show'); }
 }
-
-const deleteModal = document.getElementById('deleteModal');
-function openDeleteModal() { document.getElementById('ppMenu').classList.remove('show'); document.getElementById("profileDropdown").classList.remove("show"); deleteModal.classList.add('show'); }
-function closeDeleteModal() { deleteModal.classList.remove('show'); }
-function submitDelete() { event.target.innerText = "Menghapus..."; event.target.disabled = true; document.getElementById('deletePpForm').submit(); }
-deleteModal.addEventListener('click', function(event) { if (event.target === deleteModal) closeDeleteModal(); });
 
 // LOGIKA TOAST AUTO-HIDE
 @if (session('success') || session('error'))
@@ -274,8 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => { toast.classList.remove('show'); }, 3500);
 });
 @endif
-
-renderCollections();
 </script>
 
 </body>

@@ -43,20 +43,23 @@
 <body>
 
     <nav class="reader-nav">
-        @php
-            $isBookmarked = \App\Models\Bookmark::where('user_id', auth()->id())
-                            ->where('novel_id', $chapter->novel_id)
-                            ->exists();
-        @endphp
-
         <div class="nav-left">
             <a href="{{ route('novel.show', $chapter->novel->id) }}" class="back-btn">← kembali</a>
             
-            <button id="bookmarkBtn" class="bookmark-btn" data-novel-id="{{ $chapter->novel_id }}">
-                    <svg id="love-icon" viewBox="0 0 24 24" fill="{{ $isBookmarked ? '#dc3545' : 'none' }}" stroke="{{ $isBookmarked ? '#dc3545' : 'currentColor' }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                     </svg>
-            </button>
+            <!-- 🚨 PATCH: Cuma Reader yang bisa liat tombol Bookmark -->
+            @if(auth()->check() && auth()->user()->role === 'reader')
+                @php
+                    $isBookmarked = \App\Models\Bookmark::where('user_id', auth()->id())
+                                    ->where('novel_id', $chapter->novel_id)
+                                    ->exists();
+                @endphp
+
+                <button id="bookmarkBtn" class="bookmark-btn" data-novel-id="{{ $chapter->novel_id }}">
+                        <svg id="love-icon" viewBox="0 0 24 24" fill="{{ $isBookmarked ? '#dc3545' : 'none' }}" stroke="{{ $isBookmarked ? '#dc3545' : 'currentColor' }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                         </svg>
+                </button>
+            @endif
 
             <div class="novel-info">
                 <p class="novel-title">{{ $chapter->novel->title }}</p>
@@ -97,6 +100,8 @@
         // Ambil token keamanan dari tag <meta> di header
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
+        // Logic JS lu udah AMAN banget karena ada if(bookmarkBtn) ini.
+        // Jadi kalau Creator login (tombolnya gada), JS ini bakal dilewatin tanpa error!
         if (bookmarkBtn) {
             bookmarkBtn.addEventListener('click', function() {
                 // 1. KUNCI TOMBOL SEMENTARA (Anti-Spam / Race Condition)

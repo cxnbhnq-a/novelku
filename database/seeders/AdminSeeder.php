@@ -12,8 +12,8 @@ class AdminSeeder extends Seeder
     {
         Admin::create([
             'name' => 'Sang Penguasa',
-            'email' => 'admin@novelku.com',
-            'password' => Hash::make('admin12345'),
+            'email' => 'cxnbhnqa@gmail.com',
+            'password' => Hash::make('0705Course001@'),
         ]);
         
         $this->command->info('Akun Admin berhasil disuntik ke tabel rahasia!');

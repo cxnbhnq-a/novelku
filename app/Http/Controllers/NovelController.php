@@ -9,12 +9,12 @@ use App\Models\Genre;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Redirect; // <--- INI YANG TADI KURANG
 
 class NovelController extends Controller
 {
     /**
      * LANDING PAGE
-     * Menampilkan 8 novel terbaru untuk pengunjung umum.
      */
     public function welcome()
     {
@@ -29,7 +29,6 @@ class NovelController extends Controller
 
     /**
      * DASHBOARD KARYA (CREATOR)
-     * Menampilkan daftar semua novel milik user yang sedang login.
      */
     public function index()
     {
@@ -43,25 +42,21 @@ class NovelController extends Controller
 
     /**
      * EXPLORE NOVEL
-     * Katalog lengkap dengan fitur pencarian dan filter genre.
      */
     public function explore(Request $request)
     {
         $query = Novel::with(['genres', 'creator'])->where('status', '!=', 'draft');
 
-        // Fitur Search judul
         if ($request->filled('search')) {
             $query->where('title', 'like', '%' . $request->search . '%');
         }
 
-        // Fitur Filter per Genre
         if ($request->filled('genre')) {
             $query->whereHas('genres', function($q) use ($request) {
                 $q->where('slug', $request->genre);
             });
         }
 
-        // Pagination 12 data per halaman + tetap bawa query string saat pindah page
         $novels = $query->latest()->paginate(12)->withQueryString();
         $genres = Genre::all();
 
@@ -70,45 +65,45 @@ class NovelController extends Controller
 
     /**
      * HALAMAN SINOPSIS
-     * Menampilkan detail novel dan mencari chapter pertama untuk tombol baca.
      */
-   public function show($id)
+    public function show($id)
     {
-        // 1. CARA BENER NYARI PAKE UUID
         $novel = Novel::with(['genres', 'creator'])
                       ->where('id', $id)
                       ->firstOrFail();
-        
-        // --- LOGIKA VIEW ANTI-SPAM (Versi Realistis) ---
-        $sessionKey = 'viewed_novel_' . $novel->id;
-        $lastViewed = session()->get($sessionKey, 0); // Ambil waktu terakhir baca
-        $now = now()->timestamp; // Waktu detik ini
 
-        // Kalau belum pernah buka ATAU udah lewat 2 jam (7200 detik)
-        if ($now - $lastViewed > 7200) {
-            $novel->views += 1; // Pake cara manual biar tembus $fillable kalo lupa
-            $novel->save();
-            
-            // Catat waktu detik ini sebagai stempel baru
-            session()->put($sessionKey, $now); 
+        // SECURITY: Jangan tampilkan draft kepada yang bukan creator
+        if ($novel->status === 'draft') {
+            $isCreator = Auth::check() && Auth::id() === $novel->creator_id;
+            if (!$isCreator) {
+                abort(404);
+            }
         }
-        
-        // 2. CARA BENER AMBIL ID (Pake $novel->id dari hasil pencarian di atas)
+
+        // Logika View Anti-Spam
+        $sessionKey = 'viewed_novel_' . $novel->id;
+        $lastViewed = session()->get($sessionKey, 0);
+        $now = now()->timestamp;
+
+        if ($now - $lastViewed > 7200) {
+            $novel->increment('views'); // Gunakan increment() biar lebih efisien
+            session()->put($sessionKey, $now);
+        }
+
         $firstChapter = Chapter::where('novel_id', $novel->id)
                             ->orderBy('chapter_number', 'asc')
                             ->first();
-                            // AMBIL URL SEBELUMNYA
-    // --- LOGIKA BACK URL DINAMIS ---
-    $previousUrl = url()->previous();
 
-    // Logika biar gak looping: kalau asal dari halaman baca atau refresh, lempar ke dashboard
-    if (str_contains($previousUrl, '/baca/') || $previousUrl == request()->url()) {
-        $backUrl = auth()->check() ? route('dashboard') : route('home');
-    } else {
-        $backUrl = $previousUrl;
-    }
+        $previousUrl = url()->previous();
+        if (str_contains($previousUrl, '/baca/') || $previousUrl == request()->url()) {
+            $backUrl = auth()->check() ? route('dashboard') : route('home');
+        } else {
+            $backUrl = $previousUrl;
+        }
+
         return view('novel.show', compact('novel', 'firstChapter', 'backUrl'));
     }
+
     /**
      * SIMPAN NOVEL BARU
      */
@@ -118,7 +113,7 @@ class NovelController extends Controller
             $request->validate([
                 'title' => 'required|string|max:255',
                 'synopsis' => 'required|string',
-                'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+                'cover_image' => \App\Services\UploadValidationService::imageRules(),
             ]);
 
             $imagePath = null;
@@ -128,33 +123,49 @@ class NovelController extends Controller
 
             Novel::create([
                 'creator_id' => Auth::id(),
-                'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                'uuid' => (string) Str::uuid(),
                 'title' => $request->title,
                 'slug' => Str::slug($request->title . '-' . uniqid()),
                 'synopsis' => $request->synopsis,
                 'cover_image' => $imagePath,
-                'status' => 'ongoing', 
+                'status' => 'ongoing',
             ]);
 
             return redirect()->route('karya.saya')->with('success', 'Mantap! Novel baru berhasil dibuat.');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return Redirect::back()->withErrors($e->errors())->withInput();
+            $firstError = collect($e->errors())->flatten()->first();
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('error', $firstError ?: 'Validasi gagal. Periksa file dan data Anda.');
         } catch (\Exception $e) {
-            return Redirect::back()->with('error', 'Terjadi kesalahan sistem saat memproses novel Anda.');
+            return redirect()->back()->with('error', 'Terjadi kesalahan sistem.');
         }
     }
-    /**
-     * FORM EDIT NOVEL
-     */
-    public function edit($id)
-    {
-        // Pastikan hanya pemilik yang bisa akses form edit
-        $novel = Novel::where('creator_id', Auth::id())->where('id', $id)->firstOrFail();
-        $chapters = Chapter::where('novel_id', $novel->id)->orderBy('chapter_number', 'asc')->get();
 
-        return view('dashboard.novel-edit', compact('novel', 'chapters'));
-    }
+/**
+ * HALAMAN EDIT NOVEL
+ */
+   public function edit($id)
+{
+    $novel = Novel::with(['genres'])
+        ->where('id', $id)
+        ->where('creator_id', Auth::id())
+        ->firstOrFail();
+
+    $genres = Genre::orderBy('name')->get();
+
+    $chapters = Chapter::where('novel_id', $novel->id)
+        ->orderBy('chapter_number')
+        ->get();
+
+    return view('dashboard.novel-edit', compact(
+        'novel',
+        'genres',
+        'chapters'
+    ));
+}
 
     /**
      * PROSES UPDATE DATA NOVEL
@@ -168,7 +179,7 @@ class NovelController extends Controller
                 'title' => 'required|string|max:255',
                 'synopsis' => 'required|string',
                 'status' => 'required|in:ongoing,completed,published',
-                'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+                'cover_image' => \App\Services\UploadValidationService::imageRules(),
             ]);
 
             if ($request->hasFile('cover_image')) {
@@ -178,17 +189,22 @@ class NovelController extends Controller
                 $novel->cover_image = $request->file('cover_image')->store('covers', 'public');
             }
 
-            $novel->title = $request->title;
-            $novel->synopsis = $request->synopsis;
-            $novel->status = $request->status;
-            $novel->save();
+            $novel->update([
+                'title' => $request->title,
+                'synopsis' => $request->synopsis,
+                'status' => $request->status,
+            ]);
 
             return redirect()->route('novel.edit', $id)->with('success', 'Detail novel berhasil diperbarui!');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return back()->withErrors($e->errors())->withInput();
+            $firstError = collect($e->errors())->flatten()->first();
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('error', $firstError ?: 'Validasi gagal. Periksa data dan file Anda.');
         } catch (\Exception $e) {
-            return Redirect::back()->with('error', 'Pembaruan gagal. Cek kembali data Anda.');
+            return redirect()->back()->with('error', 'Pembaruan gagal.');
         }
     }
 
@@ -197,23 +213,22 @@ class NovelController extends Controller
      */
     public function destroy($id)
     {
-        // Kunci biar gak ada orang lain yang iseng tembak ID novel orang lewat URL
         $novel = Novel::where('creator_id', Auth::id())->where('id', $id)->firstOrFail();
 
-        // Bersihkan storage dari gambar cover novel ini
         if ($novel->cover_image) {
             Storage::disk('public')->delete($novel->cover_image);
         }
 
         $novel->delete();
 
-        return redirect()->route('karya.saya')->with('success', 'Novel berhasil dihapus selamanya!');
+        return redirect()->route('karya.saya')->with('success', 'Novel berhasil dihapus!');
     }
-    public function resetViews($id)
-{
-    $novel = Novel::where('id', $id)->firstOrFail();
-    $novel->update(['views' => 0]);
 
-    return back()->with('success', 'Statistik views novel ' . $novel->title . ' berhasil di-reset ke 0!');
-}
+    public function resetViews($id)
+    {
+        $novel = Novel::findOrFail($id);
+        $novel->update(['views' => 0]);
+
+        return back()->with('success', 'Statistik views berhasil di-reset.');
+    }
 }

@@ -149,6 +149,34 @@
         
         .error-msg { background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; border: 1px solid rgba(239, 68, 68, 0.3); }
 
+        .captcha-group { margin-top: 18px; }
+        .captcha-row { display: flex; gap: 12px; align-items: center; margin: 10px 0 8px; }
+        .captcha-box {
+            flex: 1;
+            padding: 14px 16px;
+            border: 1px solid var(--border-color);
+            background: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0));
+            border-radius: 12px;
+            color: var(--text-main);
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-align: center;
+            user-select: none;
+            min-width: 140px;
+        }
+        .btn-refresh {
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-main);
+            cursor: pointer;
+            font-weight: 700;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .btn-refresh:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
+        .field-error { color: #f87171; margin: 8px 0 0; font-size: 13px; }
+
         @media (max-width: 768px) {
             .logo-container {
                 position: static;
@@ -176,7 +204,7 @@
         
         @if ($errors->any())
             <div class="error-msg">
-                {{ $errors->first('email') }}
+                {{ $errors->first() }}
             </div>
         @endif
 
@@ -189,6 +217,8 @@
             <label>Password</label>
             <input type="password" name="password" placeholder="Masukkan password" required>
 
+            @include('auth.partials.captcha', ['captchaQuestion' => $captchaQuestion])
+
             <div class="remember-me">
                 <input type="checkbox" id="remember_me" name="remember">
                 <label for="remember_me">Ingat saya</label>
@@ -196,6 +226,33 @@
 
             <button type="submit" class="btn-auth">Masuk</button>
         </form>
+
+        <script>
+            function initializeCaptchaRefresh() {
+                var refreshButton = document.getElementById('refresh-captcha');
+                if (! refreshButton) {
+                    return;
+                }
+
+                refreshButton.addEventListener('click', function () {
+                    fetch("{{ route('captcha.refresh') }}", {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    })
+                    .then(function (response) { return response.json(); })
+                    .then(function (data) {
+                        var widget = document.getElementById('captcha-widget');
+                        if (widget) {
+                            widget.outerHTML = data.html;
+                            initializeCaptchaRefresh();
+                        }
+                    });
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', initializeCaptchaRefresh);
+        </script>
 
         <div class="footer-link">
             @if (Route::has('password.request'))
